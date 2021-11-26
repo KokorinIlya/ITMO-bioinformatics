@@ -33,32 +33,32 @@ def read_score_matrix(file_name):
 
 def get_strings(file_name):
     with open(file_name, 'r') as file:
-        return ['.' + cur_line.strip() for cur_line in file.readlines()]
+        return [cur_line.strip() for cur_line in file.readlines()]
 
 
-def get_d(x, y):
+def get_d(lx, ly):
     M = [
         [
             0 if i == 0 and j == 0 else -math.inf
-            for j in range(len(x))
+            for j in range(lx + 1)
         ]
-        for i in range(len(y))
+        for i in range(ly + 1)
     ]
 
     Ix = [
         [
             i * GAP_EXTENSION_PENALTY + GAP_OPEN_PENALTY if j == 0 else -math.inf
-            for j in range(len(x))
+            for j in range(lx + 1)
         ]
-        for i in range(len(y))
+        for i in range(ly + 1)
     ]
 
     Iy = [
         [
             j * GAP_EXTENSION_PENALTY + GAP_OPEN_PENALTY if i == 0 else -math.inf
-            for j in range(len(x))
+            for j in range(lx + 1)
         ]
-        for i in range(len(y))
+        for i in range(ly + 1)
     ]
 
     return {
@@ -77,10 +77,10 @@ def pretty_print_d(d):
 
 
 def calc_d(score_matrix, d, x, y):
-    for i in range(1, len(y)):
-        for j in range(1, len(x)):
-            cur_x = y[i]
-            cur_y = x[j]
+    for i in range(1, len(y) + 1):
+        for j in range(1, len(x) + 1):
+            cur_x = y[i - 1]
+            cur_y = x[j - 1]
             assert (cur_x, cur_y) in score_matrix and \
                    (cur_y, cur_x) in score_matrix and \
                    score_matrix[(cur_y, cur_x)] == score_matrix[(cur_x, cur_y)]
@@ -109,7 +109,9 @@ def main():
     print(score_matrix)
     x, y = get_strings('rosalind_ba5j.txt')
     print(x, y)
-    d = get_d(x, y)
+    lx = len(x)
+    ly = len(y)
+    d = get_d(lx, ly)
     pretty_print_d(d)
     calc_d(score_matrix, d, x, y)
     pretty_print_d(d)
