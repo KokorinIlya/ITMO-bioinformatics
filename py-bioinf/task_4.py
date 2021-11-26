@@ -1,6 +1,7 @@
+import math
+
 GAP_OPEN_PENALTY = -11
 GAP_EXTENSION_PENALTY = -1
-import math
 
 
 def check_symmetry(score_matrix, keys):
@@ -36,47 +37,36 @@ def get_strings(file_name):
         return [cur_line.strip() for cur_line in file.readlines()]
 
 
-def get_d(lx, ly):
-    M = [
-        [
-            0 if i == 0 and j == 0 else -math.inf
-            for j in range(lx + 1)
-        ]
-        for i in range(ly + 1)
-    ]
+def get_d(x, y):
+    lx = len(x)
+    ly = len(y)
+    prev = {}
 
-    Ix = [
-        [
-            i * GAP_EXTENSION_PENALTY + GAP_OPEN_PENALTY if j == 0 else -math.inf
-            for j in range(lx + 1)
-        ]
-        for i in range(ly + 1)
-    ]
+    M: list = [[-math.inf for _ in range(lx + 1)] for _ in range(ly + 1)]
+    M[0][0] = 0
 
-    Iy = [
-        [
-            j * GAP_EXTENSION_PENALTY + GAP_OPEN_PENALTY if i == 0 else -math.inf
-            for j in range(lx + 1)
-        ]
-        for i in range(ly + 1)
-    ]
+    Ix: list = [[-math.inf for _ in range(lx + 1)] for _ in range(ly + 1)]
+    for i in range(ly + 1):
+        Ix[i][0] = i * GAP_EXTENSION_PENALTY + GAP_OPEN_PENALTY
+        if i > 0:
+            prev[("Ix", i, 0)] = ("Ix", i - 1, 0)
 
-    return {
-        "M": M,
-        "Ix": Ix,
-        "Iy": Iy
-    }
+    Iy: list = [[-math.inf for _ in range(lx + 1)] for _ in range(ly + 1)]
+    for j in range(lx + 1):
+        Iy[0][j] = j * GAP_EXTENSION_PENALTY + GAP_OPEN_PENALTY
+        if j > 0:
+            prev[("Iy", 0, j)] = ("Iy", 0, j - 1)
+
+    return M, Ix, Iy, prev
 
 
 def pretty_print_d(d):
-    for cur_c, cur_d in d.items():
-        print(cur_c)
-        s = '\n'.join([' '.join([str(cur_elem) for cur_elem in cur_row]) for cur_row in cur_d])
-        print(s)
-        print('--------------')
+    s = '\n'.join([' '.join([str(cur_elem) for cur_elem in cur_row]) for cur_row in d])
+    print(s)
+    print('--------------')
 
 
-def calc_d(score_matrix, d, x, y):
+def calc_d(score_matrix, M, Ix, Iy, x, y, prev):
     for i in range(1, len(y) + 1):
         for j in range(1, len(x) + 1):
             cur_x = y[i - 1]
@@ -86,22 +76,33 @@ def calc_d(score_matrix, d, x, y):
                    score_matrix[(cur_y, cur_x)] == score_matrix[(cur_x, cur_y)]
             cur_cost = score_matrix[(cur_x, cur_y)]
 
-            # TODO
-            d["M"][i][j] = max(
-                d["M"][i - 1][j - 1],
-                d["Ix"][i - 1][j - 1],
-                d["Iy"][i - 1][j - 1],
-            ) + cur_cost
+            # M[i][j]
+            M[i][j] = M[i - 1][j - 1] + cur_cost
+            prev[("M", i, j)] = ("M", i - 1, j - 1)
 
-            d["Ix"][i][j] = max(
-                d["M"][i - 1][j] + GAP_OPEN_PENALTY,
-                d["Ix"][i - 1][j] + GAP_EXTENSION_PENALTY
-            )
+            if Ix[i - 1][j - 1] + cur_cost > M[i][j]:
+                M[i][j] = Ix[i - 1][j - 1] + cur_cost
+                prev[("M", i, j)] = ("Ix", i - 1, j - 1)
 
-            d["Iy"][i][j] = max(
-                d["M"][i][j - 1] + GAP_OPEN_PENALTY,
-                d["Iy"][i][j - 1] + GAP_EXTENSION_PENALTY
-            )
+            if Iy[i - 1][j - 1] + cur_cost > M[i][j]:
+                M[i][j] = Iy[i - 1][j - 1] + cur_cost
+                prev[("M", i, j)] = ("Iy", i - 1, j - 1)
+
+            # Ix[i][j]
+            Ix[i][j] = M[i - 1][j] + GAP_OPEN_PENALTY
+            prev[("Ix", i, j)] = ("M", i - 1, j)
+
+            if Ix[i - 1][j] + GAP_EXTENSION_PENALTY > Ix[i][j]:
+                Ix[i][j] = Ix[i - 1][j] + GAP_EXTENSION_PENALTY
+                prev[("Ix", i, j)] = ("Ix", i - 1, j)
+
+            # Iy[i][j]
+            Iy[i][j] = M[i][j - 1] + GAP_OPEN_PENALTY
+            prev[("Iy", i, j)] = ("M", i, j - 1)
+
+            if Iy[i][j - 1] + GAP_EXTENSION_PENALTY > Iy[i][j]:
+                Iy[i][j] = Iy[i][j - 1] + GAP_EXTENSION_PENALTY
+                prev[("Iy", i, j)] = ("Iy", i, j - 1)
 
 
 def main():
@@ -109,12 +110,14 @@ def main():
     print(score_matrix)
     x, y = get_strings('rosalind_ba5j.txt')
     print(x, y)
-    lx = len(x)
-    ly = len(y)
-    d = get_d(lx, ly)
-    pretty_print_d(d)
-    calc_d(score_matrix, d, x, y)
-    pretty_print_d(d)
+    M, Ix, Iy, prev = get_d(x, y)
+    pretty_print_d(M)
+    pretty_print_d(Ix)
+    pretty_print_d(Iy)
+    calc_d(score_matrix, M, Ix, Iy, x, y, prev)
+    pretty_print_d(M)
+    pretty_print_d(Ix)
+    pretty_print_d(Iy)
 
 
 if __name__ == '__main__':
