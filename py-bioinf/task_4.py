@@ -105,19 +105,52 @@ def calc_d(score_matrix, M, Ix, Iy, x, y, prev):
                 prev[("Iy", i, j)] = ("Iy", i, j - 1)
 
 
+def get_starting_point(M, Ix, Iy):
+    if M[-1][-1] >= Ix[-1][-1] and M[-1][-1] >= Iy[-1][-1]:
+        return 'M', M[-1][-1]
+    elif Ix[-1][-1] >= M[-1][-1] and Ix[-1][-1] >= Iy[-1][-1]:
+        return 'Ix', Ix[-1][-1]
+    else:
+        return 'Iy', Iy[-1][-1]
+
+
 def main():
     score_matrix = read_score_matrix('BLOSUM62.txt')
-    print(score_matrix)
     x, y = get_strings('rosalind_ba5j.txt')
-    print(x, y)
     M, Ix, Iy, prev = get_d(x, y)
-    pretty_print_d(M)
-    pretty_print_d(Ix)
-    pretty_print_d(Iy)
     calc_d(score_matrix, M, Ix, Iy, x, y, prev)
-    pretty_print_d(M)
-    pretty_print_d(Ix)
-    pretty_print_d(Iy)
+
+    res_x = []
+    res_y = []
+    cur_d, best_d = get_starting_point(M, Ix, Iy)
+    cur_i, cur_j = len(y), len(x)
+    while cur_i > 0 or cur_j > 0:
+        assert (cur_d, cur_i, cur_j) in prev
+        prev_d, prev_i, prev_j = prev[(cur_d, cur_i, cur_j)]
+        assert prev_d in {'M', 'Ix', 'Iy'}
+        assert 0 <= prev_i <= cur_i and 0 <= prev_j <= cur_j and \
+               (prev_i < cur_i or prev_j < cur_j)
+
+        if prev_i == cur_i - 1 and prev_j == cur_j - 1:
+            res_y.append(y[cur_i - 1])
+            res_x.append(x[cur_j - 1])
+        elif prev_i == cur_i:
+            res_y.append('-')
+            res_x.append(x[cur_j - 1])
+        else:
+            res_y.append(y[cur_i - 1])
+            res_x.append('-')
+
+        cur_i = prev_i
+        cur_j = prev_j
+        cur_d = prev_d
+
+    res_x = res_x[::-1]
+    res_y = res_y[::-1]
+
+    print(best_d)
+    print(''.join(res_x))
+    print(''.join(res_y))
 
 
 if __name__ == '__main__':
