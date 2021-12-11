@@ -52,6 +52,7 @@ def parse_emission_matrix(file: TextIO, all_states: set, all_observation: set):
     return result
 
 
+# noinspection DuplicatedCode
 def parse_file(file_name):
     with open(file_name, 'r') as file:
         observations = file.readline().strip()
