@@ -33,7 +33,6 @@ def bin_search(left_border, right_border, pred):
 
 
 def get_left_border(pattern, suf_arr, left_border, right_border, symbol_idx):
-    # print(f'Left, Borders: {left_border} {right_border}')
     assert left_border + 1 <= right_border
 
     def pred(suf_idx):
@@ -52,7 +51,6 @@ def get_left_border(pattern, suf_arr, left_border, right_border, symbol_idx):
 
 
 def get_right_border(pattern, suf_arr, left_border, right_border, symbol_idx):
-    # print(f'Right, Borders: {left_border} {right_border}')
     assert left_border + 1 <= right_border
 
     def pred(suf_idx):
