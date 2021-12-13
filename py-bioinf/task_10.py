@@ -2,7 +2,6 @@ from typing import TextIO, Optional
 import math
 
 
-# noinspection DuplicatedCode
 def parse_transition_matrix(file: TextIO, all_states: set):
     states = file.readline().strip().split()
     assert set(states) == all_states
@@ -27,7 +26,6 @@ def parse_transition_matrix(file: TextIO, all_states: set):
     return result
 
 
-# noinspection DuplicatedCode
 def parse_emission_matrix(file: TextIO, all_states: set, all_observation: set):
     observations = file.readline().strip().split()
     assert set(observations) == all_observation
@@ -52,7 +50,6 @@ def parse_emission_matrix(file: TextIO, all_states: set, all_observation: set):
     return result
 
 
-# noinspection DuplicatedCode
 def parse_file(file_name):
     with open(file_name, 'r') as file:
         observations = file.readline().strip()

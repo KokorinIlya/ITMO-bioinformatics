@@ -32,6 +32,8 @@ def bin_search(left_border, right_border, pred):
 
 
 def get_left_border(pattern, suf_arr, left_border, right_border, symbol_idx):
+    assert left_border + 1 <= right_border
+
     def pred(suf_idx):
         assert left_border <= suf_idx <= right_border
         if suf_idx == right_border:
@@ -48,6 +50,8 @@ def get_left_border(pattern, suf_arr, left_border, right_border, symbol_idx):
 
 
 def get_right_border(pattern, suf_arr, left_border, right_border, symbol_idx):
+    assert left_border + 1 <= right_border
+
     def pred(suf_idx):
         assert left_border <= suf_idx <= right_border
         if suf_idx == right_border:
@@ -69,6 +73,9 @@ def process_pattern(suf_arr, pattern):
     for symbol_idx in range(len(pattern)):
         new_left_border = get_left_border(pattern, suf_arr, left_border, right_border, symbol_idx)
         new_right_border = get_right_border(pattern, suf_arr, left_border, right_border, symbol_idx)
+
+        if new_left_border == new_right_border:
+            return new_left_border, new_right_border
 
         left_border = new_left_border
         right_border = new_right_border
